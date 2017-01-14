@@ -40,6 +40,21 @@
 
 #pragma mark - 提供给外界的接口
 
+- (void)downLoader:(NSURL *)url downLoadInfo:(DownLoadInfoType)downLoadInfo progress:(ProgressBlockType)progressBlock success:(SuccessBlockType)successBlock failed:(FailedBlockType)failedBlock {
+    
+    // 1. 给所有的block赋值
+    self.downLoadInfo = downLoadInfo;
+    self.progressChange = progressBlock;
+    self.successBlock = successBlock;
+    self.faildBlock = failedBlock;
+    
+    // 2. 开始下载
+    [self downLoader:url];
+    
+    
+}
+
+
 /**
  根据URL地址下载资源, 如果任务已经存在, 则执行继续动作
  @param url 资源路径
@@ -52,12 +67,20 @@
     
     // 0. 当前任务, 肯定存在
     if ([url isEqual:self.dataTask.originalRequest.URL]) {
+        
+        // 下载失败
         // 判断当前的状态, 如果是暂停状态
-        // 继续
-        [self resumeCurrentTask];
-        return;
+        if (self.state == XMGDownLoadStatePause) {
+            // 继续
+            [self resumeCurrentTask];
+            return;
+        }
+        
     }
 
+    // 两种: 1. 任务不存在, 2. 任务存在, 但是, 任务的Url地址 不同
+    
+    [self cacelCurrentTask];
     // 1. 获取文件名称, 指明路径, 开启一个新任务
     NSString *fileName = url.lastPathComponent;
     self.downLoadedPath = [kCachePath stringByAppendingPathComponent:fileName];
@@ -68,8 +91,7 @@
     //     return
     if ([XMGFileTool fileExists:self.downLoadedPath]) {
         // UNDO: 告诉外界, 已经下载完成;
-        NSLog(@"已经下载完成");
-        
+//        NSLog(@"已经下载完成");
         self.state = XMGDownLoadStatePauseSuccess;
         return;
     }
@@ -148,6 +170,8 @@
  */
 -(void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSHTTPURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
     
+    
+    
     // 取资源总大小
     // 1. 从  Content-Length 取出来
     // 2. 如果 Content-Range 有, 应该从Content-Range里面获取
@@ -156,10 +180,18 @@
     if (contentRangeStr.length != 0) {
         _totalSize = [[contentRangeStr componentsSeparatedByString:@"/"].lastObject longLongValue];
     }
+    
+    // 传递给外界 : 总大小 & 本地存储的文件路径
+    if (self.downLoadInfo != nil) {
+        self.downLoadInfo(_totalSize);
+    }
+    
+    
+    
     // 比对本地大小, 和 总大小
     if (_tmpSize == _totalSize) {
         // 1. 移动到下载完成文件夹
-        NSLog(@"移动文件到下载完成");
+//        NSLog(@"移动文件到下载完成");
         [XMGFileTool moveFile:self.downLoadingPath toPath:self.downLoadedPath];
         // 2. 取消本次请求
         completionHandler(NSURLSessionResponseCancel);
@@ -172,12 +204,12 @@
     
     if (_tmpSize > _totalSize) {
         // 1. 删除临时缓存
-        NSLog(@"删除临时缓存");
+//        NSLog(@"删除临时缓存");
         [XMGFileTool removeFile:self.downLoadingPath];
         // 2. 取消请求
         completionHandler(NSURLSessionResponseCancel);
         // 3. 从0 开始下载
-        NSLog(@"重新开始下载");
+//        NSLog(@"重新开始下载");
         [self downLoader:response.URL];
         return;
         
@@ -202,6 +234,11 @@
  */
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
+    // 这就是当前已经下载的大小
+    _tmpSize += data.length;
+    
+    self.progress =  1.0 * _tmpSize / _totalSize;
+
     // 往输出流中写入数据
     [self.outputStream write:data.bytes maxLength:data.length];
 //    NSLog(@"在接收后续数据");
@@ -217,7 +254,7 @@
  */
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
     
-    NSLog(@"请求完成");
+//    NSLog(@"请求完成");
     if (error == nil) {
         // 不一定是成功
         // 数据是肯定可以请求完毕
@@ -230,7 +267,7 @@
     }else {
         
         
-        NSLog(@"有问题--%zd--%@", error.code, error.localizedDescription);
+//        NSLog(@"有问题--%zd--%@", error.code, error.localizedDescription);
         // 取消,  断网
         // 999 != 999
         if (-999 == error.code) {
@@ -287,8 +324,26 @@
     _state = state;
     
     // 代理, block, 通知
+    if (self.stateChange) {
+        self.stateChange(_state);
+    }
     
+    if (_state == XMGDownLoadStatePauseSuccess && self.successBlock) {
+        self.successBlock(self.downLoadedPath);
+    }
     
+    if (_state == XMGDownLoadStatePauseFailed && self.faildBlock) {
+        self.faildBlock();
+    }
+    
+}
+
+
+- (void)setProgress:(float)progress {
+    _progress = progress;
+    if (self.progressChange) {
+        self.progressChange(_progress);
+    }
 }
     
     
