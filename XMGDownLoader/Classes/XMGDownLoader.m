@@ -14,6 +14,8 @@
 #define kTmpPath NSTemporaryDirectory()
 
 
+
+
 @interface XMGDownLoader () <NSURLSessionDataDelegate>
 {
     // 记录文件临时下载大小
@@ -31,7 +33,7 @@
 @property (nonatomic, strong) NSOutputStream *outputStream;
 /** 当前下载任务 */
 @property (nonatomic, weak) NSURLSessionDataTask *dataTask;
-    
+
 @end
 
 @implementation XMGDownLoader
@@ -67,6 +69,8 @@
     if ([XMGFileTool fileExists:self.downLoadedPath]) {
         // UNDO: 告诉外界, 已经下载完成;
         NSLog(@"已经下载完成");
+        
+        self.state = XMGDownLoadStatePauseSuccess;
         return;
     }
 
@@ -91,13 +95,30 @@
  - 解决方案: 引入状态
  */
 - (void)pauseCurrentTask {
-    [self.dataTask suspend];
+    if (self.state == XMGDownLoadStateDownLoading) {
+        self.state = XMGDownLoadStatePause;
+        [self.dataTask suspend];
+    }
+}
+
+/**
+ 继续任务
+ - 如果调用了几次暂停, 就要调用几次继续, 才可以继续
+ - 解决方案: 引入状态
+ */
+- (void)resumeCurrentTask {
+    if (self.dataTask && self.state == XMGDownLoadStatePause) {
+        [self.dataTask resume];
+        self.state = XMGDownLoadStateDownLoading;
+    }
+
 }
 
 /**
  取消当前任务
  */
 - (void)cacelCurrentTask {
+    self.state = XMGDownLoadStatePause;
     [self.session invalidateAndCancel];
     self.session = nil;
 }
@@ -111,14 +132,7 @@
     // 下载完成的文件 -> 手动删除某个声音 -> 统一清理缓存
 }
 
-/**
- 继续任务
- - 如果调用了几次暂停, 就要调用几次继续, 才可以继续
- - 解决方案: 引入状态
- */
-- (void)resumeCurrentTask {
-    [self.dataTask resume];
-}
+
 
 
 #pragma mark - 协议方法
@@ -147,9 +161,12 @@
         // 1. 移动到下载完成文件夹
         NSLog(@"移动文件到下载完成");
         [XMGFileTool moveFile:self.downLoadingPath toPath:self.downLoadedPath];
-        
         // 2. 取消本次请求
         completionHandler(NSURLSessionResponseCancel);
+        
+        // 3. 修改状态
+        self.state = XMGDownLoadStatePauseSuccess;
+        
         return;
     }
     
@@ -166,6 +183,7 @@
         
     }
 
+    self.state = XMGDownLoadStateDownLoading;
     // 继续接受数据
     // 确定开始下载数据
     self.outputStream = [NSOutputStream outputStreamToFileAtPath:self.downLoadingPath append:YES];
@@ -186,7 +204,7 @@
 {
     // 往输出流中写入数据
     [self.outputStream write:data.bytes maxLength:data.length];
-    NSLog(@"在接收后续数据");
+//    NSLog(@"在接收后续数据");
 }
 
 
@@ -206,10 +224,22 @@
         // 判断, 本地缓存 == 文件总大小 {filename: filesize: md5:xxx}
         // 如果等于 => 验证, 是否文件完整(file md5 )
         
+        [XMGFileTool moveFile:self.downLoadingPath toPath:self.downLoadedPath];
+        self.state = XMGDownLoadStatePauseSuccess;
+        
     }else {
-        NSLog(@"有问题");
+        
+        
+        NSLog(@"有问题--%zd--%@", error.code, error.localizedDescription);
+        // 取消,  断网
+        // 999 != 999
+        if (-999 == error.code) {
+            self.state = XMGDownLoadStatePause;
+        }else {
+            self.state = XMGDownLoadStatePauseFailed;
+        }
+        
     }
-    
     [self.outputStream close];
     
 }
@@ -229,7 +259,7 @@
     [request setValue:[NSString stringWithFormat:@"bytes=%lld-", offset] forHTTPHeaderField:@"Range"];
     // session 分配的task, 默认情况, 挂起状态
     self.dataTask = [self.session dataTaskWithRequest:request];
-    [self.dataTask resume];
+    [self resumeCurrentTask];
     
 }
 
@@ -248,7 +278,18 @@
 }
     
     
+#pragma mark - 事件/数据传递
+- (void)setState:(XMGDownLoadState)state {
+    // 数据过滤
+    if(_state == state) {
+        return;
+    }
+    _state = state;
     
+    // 代理, block, 通知
+    
+    
+}
     
     
 @end

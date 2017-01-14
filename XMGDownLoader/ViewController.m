@@ -11,27 +11,43 @@
 
 @interface ViewController ()
 
-    @property (nonatomic, strong) XMGDownLoader *downLoader;
-    
+@property (nonatomic, strong) XMGDownLoader *downLoader;
+
+@property (nonatomic, weak) NSTimer *timer;
+
 @end
 
 @implementation ViewController
 
-    - (XMGDownLoader *)downLoader {
-        if (!_downLoader) {
-            _downLoader = [XMGDownLoader new];
-        }
-        return _downLoader;
+- (NSTimer *)timer {
+    if (!_timer) {
+        NSTimer *timer = [NSTimer timerWithTimeInterval:1 target:self selector:@selector(update) userInfo:nil repeats:YES];
+        [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+        _timer = timer;
     }
-    
-    
+    return _timer;
+}
+
+
+
+- (XMGDownLoader *)downLoader {
+    if (!_downLoader) {
+        _downLoader = [XMGDownLoader new];
+    }
+    return _downLoader;
+}
+
+
+
+- (void)update {
+    NSLog(@"----%zd", self.downLoader.state);
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
    
-    
-    
-    
-    
+    [self timer];
+  
 }
 
 - (IBAction)download:(id)sender {

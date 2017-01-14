@@ -8,6 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
+
+typedef NS_ENUM(NSUInteger, XMGDownLoadState) {
+    XMGDownLoadStatePause,
+    XMGDownLoadStateDownLoading,
+    XMGDownLoadStatePauseSuccess,
+    XMGDownLoadStatePauseFailed
+};
+
+
 // 一个下载器, 对应一个下载任务
 // XMGDownLoader -> url
 @interface XMGDownLoader : NSObject
@@ -36,6 +45,14 @@
  取消任务, 并清理资源
  */
 - (void)cacelAndClean;
+
+
+
+/// 数据
+
+@property (nonatomic, assign) XMGDownLoadState state;
+
+
 
 
 
