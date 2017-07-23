@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		701EFE8F1E29FF5C0021851E /* XMGDownLoaderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 701EFE8E1E29FF5C0021851E /* XMGDownLoaderManager.m */; };
+		701EFE921E2A00DF0021851E /* NSString+SZ.m in Sources */ = {isa = PBXBuildFile; fileRef = 701EFE911E2A00DF0021851E /* NSString+SZ.m */; };
 		70C9095C1E222B4100DBA849 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 70C9095B1E222B4100DBA849 /* main.m */; };
 		70C9095F1E222B4100DBA849 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 70C9095E1E222B4100DBA849 /* AppDelegate.m */; };
 		70C909621E222B4100DBA849 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70C909611E222B4100DBA849 /* ViewController.m */; };
@@ -18,6 +20,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		701EFE8D1E29FF5C0021851E /* XMGDownLoaderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMGDownLoaderManager.h; sourceTree = "<group>"; };
+		701EFE8E1E29FF5C0021851E /* XMGDownLoaderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMGDownLoaderManager.m; sourceTree = "<group>"; };
+		701EFE901E2A00DF0021851E /* NSString+SZ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+SZ.h"; sourceTree = "<group>"; };
+		701EFE911E2A00DF0021851E /* NSString+SZ.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+SZ.m"; sourceTree = "<group>"; };
 		70C909571E222B4100DBA849 /* XMGDownLoader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XMGDownLoader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		70C9095B1E222B4100DBA849 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		70C9095D1E222B4100DBA849 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -91,8 +97,12 @@
 			children = (
 				70C909721E222C9200DBA849 /* XMGDownLoader.h */,
 				70C909731E222C9200DBA849 /* XMGDownLoader.m */,
+				701EFE8D1E29FF5C0021851E /* XMGDownLoaderManager.h */,
+				701EFE8E1E29FF5C0021851E /* XMGDownLoaderManager.m */,
 				70C909751E22302E00DBA849 /* XMGFileTool.h */,
 				70C909761E22302E00DBA849 /* XMGFileTool.m */,
+				701EFE901E2A00DF0021851E /* NSString+SZ.h */,
+				701EFE911E2A00DF0021851E /* NSString+SZ.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -173,6 +183,8 @@
 				70C9095F1E222B4100DBA849 /* AppDelegate.m in Sources */,
 				70C9095C1E222B4100DBA849 /* main.m in Sources */,
 				70C909771E22302E00DBA849 /* XMGFileTool.m in Sources */,
+				701EFE921E2A00DF0021851E /* NSString+SZ.m in Sources */,
+				701EFE8F1E29FF5C0021851E /* XMGDownLoaderManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,6 +339,7 @@
 				70C909701E222B4100DBA849 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

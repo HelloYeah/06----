@@ -36,7 +36,7 @@ typedef void(^StateChangeType)(XMGDownLoadState state);
  @param url 资源路径
  */
 - (void)downLoader:(NSURL *)url;
-
+- (void)resumeCurrentTask;
 /**
  暂停任务
  注意:
